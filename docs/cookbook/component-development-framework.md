@@ -584,7 +584,21 @@ The recommended workflow builds top-down: UI first, then wiring.
 
 ---
 
-## Principles & Rationale
+## Authentication & Authorization (Backend Integration)
+
+This template is fully aligned with the companion FastAPI backend (`python-clean-template`).
+
+### Authorization Model (User → Role → Permission)
+- **Roles & Permissions**: Access control is evaluated through permissions assigned to roles.
+- **Super User**: Users with the `super:user` permission automatically bypass all permission gates.
+- **Permission Constants**: Defined in `@/lib/permissions.ts`.
+
+### Architecture Integration
+- **Level 1 (App)**: `AuthProvider` (`@/components/layout/auth-provider.tsx`) wrapped in `Providers`. Exposes `useAuth()` with methods like `hasPermission()`, `hasRole()`, `login()`, and `logout()`.
+- **Level 2 (Route)**: `<AuthGuard permission={...} role={...} redirectTo="/login">` protects route segments or layouts.
+- **Level 3 (Component)**: `<PermissionGate permission={...} role={...} fallback={...}>` conditionally renders actions or widgets inside Dependency Injectors.
+- **Networking (`lib/fetcher.ts`)**: Automatic Bearer token attachment, automatic 401 token refresh queue handling with the backend's HttpOnly refresh cookie, and unwrapping of `StandardResponse[T]`.
+
 
 **1. UI is the highest-level module.**  
 Like Entities in Clean Architecture, UI components depend on nothing. They are stable, reusable, and immune to infrastructure changes.
