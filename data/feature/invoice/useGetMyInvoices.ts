@@ -1,5 +1,20 @@
 import { Invoice } from "@/lib/types/Invoice";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+const MOCKED_MY_INVOICES: Invoice[] = [
+  {
+    id: "INV001",
+    status: "Paid",
+    amount: 250.0,
+    method: "Credit Card",
+  },
+  {
+    id: "INV002",
+    status: "Pending",
+    amount: 150.0,
+    method: "PayPal",
+  },
+];
 
 export interface UseGetMyInvoicesReturn {
   invoices: Invoice[];
@@ -7,40 +22,16 @@ export interface UseGetMyInvoicesReturn {
 }
 
 export default function useGetMyInvoices(): UseGetMyInvoicesReturn {
-  // Your integration with data layer goes here
-  // fetching, reading from cache, mocking, etc.
-  // no mather what happens, the contract is already
-  // exists as UseXXXReturn interface at the top
-  const [data, setData] = useState<Invoice[]>([]);
-  const [succeed, setSucceed] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    // We can mock data until the final solution is ready
-    if (Math.random() > 0.15) {
-      setData(MOCKED_MY_INVOICES);
-      setSucceed(true);
-    } else {
-      setSucceed(false);
-    }
-  }, []);
+  const query = useQuery<Invoice[]>({
+    queryKey: ["invoices", "me"],
+    queryFn: async () => {
+      return MOCKED_MY_INVOICES;
+    },
+    staleTime: Infinity,
+  });
 
   return {
-    invoices: data,
-    succeed,
+    invoices: query.data ?? [],
+    succeed: query.isSuccess,
   };
 }
-
-const MOCKED_MY_INVOICES = [
-  {
-    id: "INV002",
-    status: "Pending",
-    method: "PayPal",
-    amount: 150,
-  },
-  {
-    id: "INV003",
-    status: "Unpaid",
-    method: "Bank Transfer",
-    amount: 350,
-  },
-];
